@@ -6,27 +6,18 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
-	"syscall"
 )
 
 // Run runs the provided App.  Should be called directly in main.
 func Run(app App) {
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, syscall.SIGINT, syscall.SIGTERM)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		<-sigc
-		cancel()
-	}()
-
-	if err := runInContext(ctx, cancel, app); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	if err := runInContext(ctx, stop, app); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 }
 
-func runInContext(ctx context.Context, cancel context.CancelFunc, app App) error {
+func runInContext(ctx context.Context, stop context.CancelFunc, app App) error {
 	// Get the services we'll be running.  If there aren't any, we just stop
 	// here.
 	services, err := app.Services()
@@ -57,7 +48,7 @@ func runInContext(ctx context.Context, cancel context.CancelFunc, app App) error
 	case err := <-errc:
 		terminationError = err
 		errorCount++
-		cancel()
+		stop()
 	}
 
 	// Receive all the errors to ensure all the services have shutdown.
