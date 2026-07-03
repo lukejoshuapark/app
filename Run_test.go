@@ -105,7 +105,7 @@ func NewTestApp(failsSetup bool, services []Service) *TestApp {
 	}
 }
 
-func (a *TestApp) Services() ([]Service, error) {
+func (a *TestApp) Services(ctx context.Context) ([]Service, error) {
 	if a.failsSetup {
 		return nil, errors.New("failed setup")
 	}

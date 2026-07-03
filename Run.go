@@ -20,7 +20,7 @@ func Run(app App) {
 func runInContext(ctx context.Context, stop context.CancelFunc, app App) error {
 	// Get the services we'll be running.  If there aren't any, we just stop
 	// here.
-	services, err := app.Services()
+	services, err := app.Services(ctx)
 	if err != nil {
 		return err
 	}
