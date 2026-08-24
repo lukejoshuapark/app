@@ -6,11 +6,12 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"syscall"
 )
 
 // Run runs the provided App.  Should be called directly in main.
 func Run(app App) {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	if err := runInContext(ctx, stop, app); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
